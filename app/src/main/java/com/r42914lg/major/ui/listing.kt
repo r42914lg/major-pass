@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
@@ -33,19 +32,35 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.r42914lg.major.MainStateHolder
+import com.r42914lg.major.ScreenEvent
 import com.r42914lg.major.model.Car
 import com.r42914lg.major.model.Visitor
-import com.r42914lg.major.ui.theme.MajorTheme
 
 @Composable
 fun Visitors(
+    mainStateHolder: MainStateHolder,
     modifier: Modifier = Modifier,
-    visitors: List<Visitor> = emptyList(),
-    onDelete: (Visitor) -> Unit = {}
 ) {
-    LazyColumn(modifier) {
-        items(visitors, key = { it.name }) { visitor ->
-            VisitorCard(visitor = visitor, onDelete = onDelete)
+    val state by mainStateHolder.screenState.collectAsStateWithLifecycle()
+    state?.let { visitors ->
+        LazyColumn(modifier) {
+            items(visitors.size, key = { visitors[it].id }) { index ->
+                VisitorCard(
+                    visitor = visitors[index],
+                    onDelete = {
+                        mainStateHolder.onScreenEvent(ScreenEvent.RemoveVisitor(it))
+                    }
+                )
+            }
+        }
+    } ?: run {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("Добавь тенниста ниже!")
         }
     }
 }
@@ -135,44 +150,13 @@ fun VisitorCard(
     }
 }
 
-
-@Preview(showBackground = true)
-@Composable
-fun visitorsPreview() {
-    MajorTheme {
-        Visitors(
-            visitors = listOf(
-                Visitor(
-                    "Кац",
-                    listOf(
-                        Car("Мерседес", "х156уя197"),
-                        Car("Ауди", "е996ен150"),
-                    )
-                ),
-                Visitor(
-                    "Мойша",
-                    listOf(
-                        Car("Жигули", "м0248мм"),
-                    )
-                ),
-                Visitor(
-                    "Бегемот",
-                    listOf(
-                        Car("Форд", "к7208мо"),
-                    )
-                ),
-            )
-        )
-    }
-}
-
 @Preview(showBackground = true)
 @Composable
 fun visitorsCardPreview() {
     VisitorCard(
         visitor = Visitor(
-            "Мойша",
-            listOf(
+            name = "Мойша",
+            cars = listOf(
                 Car("Жигули", "м0248мм"),
             )
         )
