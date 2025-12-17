@@ -46,21 +46,21 @@ fun Visitors(
     onVisitorClick: (Visitor) -> Unit = {},
 ) {
     val state by mainStateHolder.screenState.collectAsStateWithLifecycle()
-    state?.let { visitors ->
+    if (state.isNotEmpty()) {
         LazyColumn(modifier.padding(vertical = 100.dp, horizontal = 16.dp)) {
-            items(visitors.size, key = { visitors[it].id }) { index ->
+            items(state.size, key = { state[it].id }) { index ->
                 VisitorCard(
                     modifier = Modifier.clickable {
-                        onVisitorClick(visitors[index])
+                        onVisitorClick(state[index])
                     },
-                    visitor = visitors[index],
+                    visitor = state[index],
                     onDelete = {
                         mainStateHolder.onScreenEvent(ScreenEvent.RemoveVisitor(it))
                     }
                 )
             }
         }
-    } ?: run {
+    } else {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
@@ -129,7 +129,7 @@ fun VisitorCard(
             Column(
                 modifier = Modifier.padding(16.dp)
             ) {
-                Text(text = visitor.name)
+                Text(text = visitor.name.ifBlank { "Новый теннисист - нажми и редактируй" })
                 Column(
                     modifier = Modifier.padding(top = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)

@@ -8,6 +8,7 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -45,7 +46,7 @@ class MainActivity : ComponentActivity() {
                 entry<RouteDetails>{ key -> Details(
                         data = key.data,
                         onEditComplete = {
-                            mainStateHolder.onScreenEvent(ScreenEvent.AddVisitor(it))
+                            mainStateHolder.onScreenEvent(ScreenEvent.EditVisitor(it))
                             navigator.goBack()
                         },
                         onNavigateBack = {
@@ -61,12 +62,12 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     floatingActionButton = {
                         FloatingActionButton(onClick = {
-                            mainStateHolder.onScreenEvent(ScreenEvent.AddVisitor(Visitor()))
+                            mainStateHolder.onScreenEvent(ScreenEvent.AddVisitor)
                         }) {
                             Icon(Icons.Filled.Add, contentDescription = "Add Visitor")
                         }
                     }
-                ) { innerPadding ->
+                ) {
                     NavDisplay(
                         entries = navigationState.toEntries(entryProvider),
                         onBack = { navigator.goBack() },

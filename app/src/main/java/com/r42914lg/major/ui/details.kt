@@ -1,5 +1,6 @@
 package com.r42914lg.major.ui
 
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,12 +25,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.r42914lg.major.model.Car
@@ -44,7 +47,9 @@ fun Details(
     onNavigateBack: () -> Unit = {}
 ) {
     var name by remember { mutableStateOf(data.name) }
-    val cars = remember { mutableStateListOf(*data.cars.toTypedArray()) }
+    val cars = remember { data.cars.toMutableStateList() }
+
+    val focusManager = LocalFocusManager.current
 
     Scaffold(
         topBar = {
@@ -60,12 +65,18 @@ fun Details(
     ) { innerPadding ->
         Column(
             modifier = modifier
+                .pointerInput(Unit) {
+                    detectTapGestures(onTap = {
+                        focusManager.clearFocus()
+                    })
+                }
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(16.dp)
         ) {
             OutlinedTextField(
                 value = name,
+                singleLine = true,
                 onValueChange = { name = it },
                 label = { Text("Visitor Name") },
                 modifier = Modifier.fillMaxWidth()
@@ -113,7 +124,7 @@ fun Details(
                 onClick = { cars.add(Car("", "")) },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Add Car")
+                Text("Добавить машину")
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -123,9 +134,10 @@ fun Details(
                     val updatedVisitor = data.copy(name = name, cars = cars.toList())
                     onEditComplete(updatedVisitor)
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                enabled = name.isNotBlank()
             ) {
-                Text("Save")
+                Text("Сохранить")
             }
         }
     }
