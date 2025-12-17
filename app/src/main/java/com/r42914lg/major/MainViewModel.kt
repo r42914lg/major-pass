@@ -2,6 +2,7 @@ package com.r42914lg.major
 
 import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel
+import com.r42914lg.major.model.Car
 import com.r42914lg.major.model.Visitor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,7 +20,26 @@ interface MainStateHolder {
 }
 
 class MainViewModel : ViewModel(), MainStateHolder {
-    private val _screenState = MutableStateFlow(null)
+    private val _screenState = MutableStateFlow(listOf(
+        Visitor(
+            name = "Мойша",
+            cars = listOf(
+                Car("Жигули", "м0248мм"),
+            )
+        ),
+        Visitor(
+            name = "ldnfsk",
+            cars = listOf(
+                Car("Жигули", "м0248мм"),
+            )
+        ),
+        Visitor(
+            name = "iyuiokoul",
+            cars = listOf(
+                Car("Жигули", "м0248мм"),
+            )
+        ),
+    ))
     override val screenState: StateFlow<List<Visitor>?>
         get() = _screenState.asStateFlow()
 

@@ -3,6 +3,7 @@ package com.r42914lg.major.ui
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -42,12 +43,16 @@ import com.r42914lg.major.model.Visitor
 fun Visitors(
     mainStateHolder: MainStateHolder,
     modifier: Modifier = Modifier,
+    onVisitorClick: (Visitor) -> Unit = {},
 ) {
     val state by mainStateHolder.screenState.collectAsStateWithLifecycle()
     state?.let { visitors ->
-        LazyColumn(modifier) {
+        LazyColumn(modifier.padding(vertical = 100.dp, horizontal = 16.dp)) {
             items(visitors.size, key = { visitors[it].id }) { index ->
                 VisitorCard(
+                    modifier = Modifier.clickable {
+                        onVisitorClick(visitors[index])
+                    },
                     visitor = visitors[index],
                     onDelete = {
                         mainStateHolder.onScreenEvent(ScreenEvent.RemoveVisitor(it))
@@ -90,7 +95,7 @@ fun VisitorCard(
         backgroundContent = {
             val color by animateColorAsState(
                 when (dismissState.targetValue) {
-                    SwipeToDismissBoxValue.Settled -> Color.LightGray
+                    SwipeToDismissBoxValue.Settled -> Color.Transparent
                     SwipeToDismissBoxValue.EndToStart -> Color.Red
                     else -> Color.Transparent
                 },
