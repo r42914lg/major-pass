@@ -71,16 +71,20 @@ class MainViewModel(application: Application) : AndroidViewModel(application), M
             }
 
             is ScreenEvent.SelectCar -> {
+                val isCarSelectedTargetValue = !event.car.isSelected
                 val mutableList = _screenState.value.toMutableList()
                 mutableList.forEachIndexed { i, visitor ->
                     if (visitor.id == event.visitor.id) {
                         val mutableCars = visitor.cars.toMutableList()
                         mutableCars.forEachIndexed { j, car ->
                             if (car.licencePlate == event.car.licencePlate) {
-                                mutableCars[j] = car.copy(isSelected = !car.isSelected)
+                                mutableCars[j] = car.copy(isSelected = isCarSelectedTargetValue)
                             }
                         }
-                        mutableList[i] = visitor.copy(cars = mutableCars)
+                        mutableList[i] = visitor.copy(
+                            isSelected = if (isCarSelectedTargetValue) true else visitor.isSelected,
+                            cars = mutableCars
+                        )
                     }
                 }
                 _screenState.update { mutableList.toList() }
@@ -89,10 +93,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application), M
                 }
             }
             is ScreenEvent.SelectVisitor -> {
+                val isSelectedTargetValue = !event.visitor.isSelected
                 val mutableList = _screenState.value.toMutableList()
                 mutableList.forEachIndexed { i, visitor ->
                     if (visitor.id == event.visitor.id) {
-                        val isSelectedTargetValue = !event.visitor.isSelected
                         val mutableCars = visitor.cars.toMutableList()
                         if (!isSelectedTargetValue) {
                             mutableCars.forEachIndexed { j, car ->

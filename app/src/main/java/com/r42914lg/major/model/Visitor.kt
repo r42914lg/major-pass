@@ -12,5 +12,12 @@ data class Visitor(
 )
 
 fun List<Visitor>.toClipboardText(): String {
-    return ""
+    val res = StringBuilder()
+    filter { it.isSelected }.forEach { visitor ->
+        res.append("\nФИО ${visitor.name}\n")
+        visitor.cars.filter { it.isSelected }.forEach {
+            res.append("а/м ${it.make} ${it.licencePlate}\n")
+        }
+    }
+    return res.toString()
 }
