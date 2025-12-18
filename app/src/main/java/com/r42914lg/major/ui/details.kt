@@ -54,7 +54,7 @@ fun Details(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Edit Visitor") },
+                title = { Text("Введи ФИО") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -78,13 +78,13 @@ fun Details(
                 value = name,
                 singleLine = true,
                 onValueChange = { name = it },
-                label = { Text("Visitor Name") },
+                label = { Text("ФИО посетителя") },
                 modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text("Cars", style = MaterialTheme.typography.titleMedium)
+            Text("Машины", style = MaterialTheme.typography.titleMedium)
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -102,7 +102,7 @@ fun Details(
                             onValueChange = { updatedMake ->
                                 cars[index] = car.copy(make = updatedMake)
                             },
-                            label = { Text("Make") },
+                            label = { Text("Марка") },
                             modifier = Modifier.weight(1f)
                         )
                         OutlinedTextField(
@@ -110,11 +110,11 @@ fun Details(
                             onValueChange = { updatedPlate ->
                                 cars[index] = car.copy(licencePlate = updatedPlate)
                             },
-                            label = { Text("Plate") },
+                            label = { Text("Гос. номер") },
                             modifier = Modifier.weight(1f)
                         )
                         IconButton(onClick = { cars.removeAt(index) }) {
-                            Icon(Icons.Default.Delete, contentDescription = "Remove Car")
+                            Icon(Icons.Default.Delete, contentDescription = "Удалить")
                         }
                     }
                 }
@@ -131,7 +131,11 @@ fun Details(
 
             Button(
                 onClick = {
-                    val updatedVisitor = data.copy(name = name, cars = cars.toList())
+                    val updatedVisitor = data.copy(
+                        name = name,
+                        cars = cars
+                            .filter { it.make.isNotBlank() && it.licencePlate.isNotBlank() }
+                            .toList())
                     onEditComplete(updatedVisitor)
                 },
                 modifier = Modifier.fillMaxWidth(),

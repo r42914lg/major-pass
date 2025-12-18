@@ -6,4 +6,5 @@ import kotlinx.serialization.Serializable
 data class Car(
     val make: String = "",
     val licencePlate: String = "",
+    val isSelected: Boolean = false,
 )

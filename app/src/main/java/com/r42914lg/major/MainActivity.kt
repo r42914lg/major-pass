@@ -5,19 +5,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.FabPosition
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.scene.DialogSceneStrategy
 import androidx.navigation3.ui.NavDisplay
-import com.r42914lg.major.model.Visitor
 import com.r42914lg.major.ui.Details
 import com.r42914lg.major.ui.Navigator
 import com.r42914lg.major.ui.RouteDetails
@@ -55,25 +49,12 @@ class MainActivity : ComponentActivity() {
                     )
                 }
             }
-
-
             MajorTheme {
-                Scaffold(
-                    modifier = Modifier.fillMaxSize(),
-                    floatingActionButton = {
-                        FloatingActionButton(onClick = {
-                            mainStateHolder.onScreenEvent(ScreenEvent.AddVisitor)
-                        }) {
-                            Icon(Icons.Filled.Add, contentDescription = "Add Visitor")
-                        }
-                    }
-                ) {
-                    NavDisplay(
-                        entries = navigationState.toEntries(entryProvider),
-                        onBack = { navigator.goBack() },
-                        sceneStrategy = remember { DialogSceneStrategy() }
-                    )
-                }
+                NavDisplay(
+                    entries = navigationState.toEntries(entryProvider),
+                    onBack = { navigator.goBack() },
+                    sceneStrategy = remember { DialogSceneStrategy() }
+                )
             }
         }
     }

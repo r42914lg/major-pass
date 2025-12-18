@@ -1,5 +1,6 @@
 package com.r42914lg.major.ui
 
+import android.content.ClipData
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
@@ -12,25 +13,36 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.ClipEntry
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -38,6 +50,8 @@ import com.r42914lg.major.MainStateHolder
 import com.r42914lg.major.ScreenEvent
 import com.r42914lg.major.model.Car
 import com.r42914lg.major.model.Visitor
+import com.r42914lg.major.model.toClipboardText
+import kotlinx.coroutines.launch
 
 @Composable
 fun Visitors(
@@ -45,27 +59,74 @@ fun Visitors(
     modifier: Modifier = Modifier,
     onVisitorClick: (Visitor) -> Unit = {},
 ) {
+    val clipboardManager = LocalClipboard.current
+    val scope = rememberCoroutineScope()
+
     val state by mainStateHolder.screenState.collectAsStateWithLifecycle()
-    if (state.isNotEmpty()) {
-        LazyColumn(modifier.padding(vertical = 100.dp, horizontal = 16.dp)) {
-            items(state.size, key = { state[it].id }) { index ->
-                VisitorCard(
-                    modifier = Modifier.clickable {
-                        onVisitorClick(state[index])
-                    },
-                    visitor = state[index],
-                    onDelete = {
-                        mainStateHolder.onScreenEvent(ScreenEvent.RemoveVisitor(it))
+    val canShare by derivedStateOf {
+        state.count { it.isSelected } > 0
+    }
+
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        topBar = {
+            Button(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 50.dp, start = 16.dp, end = 16.dp, bottom = 32.dp)
+                ,
+                enabled = canShare,
+                onClick = {
+                    scope.launch {
+                        clipboardManager.setClipEntry(
+                            ClipEntry(
+                                ClipData.newPlainText(
+                                    "Данные для пропуска",
+                                    state.toClipboardText()
+                                )
+                            )
+                        )
                     }
-                )
+                }
+            ) {
+                Text("Скопировать текстом в буфер")
+            }
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = {
+                mainStateHolder.onScreenEvent(ScreenEvent.AddVisitor)
+            }) {
+                Icon(Icons.Filled.Add, contentDescription = "Add Visitor")
             }
         }
-    } else {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text("Добавь тенниста ниже!")
+    ) { paddingValues ->
+        if (state.isNotEmpty()) {
+            LazyColumn(Modifier.padding(paddingValues).padding(start = 16.dp, end = 16.dp, bottom = 100.dp)) {
+                items(state.size, key = { state[it].id }) { index ->
+                    VisitorCard(
+                        modifier = Modifier.clickable {
+                            onVisitorClick(state[index])
+                        },
+                        visitor = state[index],
+                        onDelete = {
+                            mainStateHolder.onScreenEvent(ScreenEvent.RemoveVisitor(it))
+                        },
+                        onVisitorSelected = {
+                            mainStateHolder.onScreenEvent(ScreenEvent.SelectVisitor(it))
+                        },
+                        onCarSelected = { car, visitor ->
+                            mainStateHolder.onScreenEvent(ScreenEvent.SelectCar(car, visitor))
+                        }
+                    )
+                }
+            }
+        } else {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("Добавь тенниста ниже!")
+            }
         }
     }
 }
@@ -75,7 +136,9 @@ fun Visitors(
 fun VisitorCard(
     modifier: Modifier = Modifier,
     visitor: Visitor = Visitor(),
-    onDelete: (Visitor) -> Unit = {}
+    onDelete: (Visitor) -> Unit = {},
+    onVisitorSelected: (Visitor) -> Unit = {},
+    onCarSelected: (Car, Visitor) -> Unit = { _, _ -> },
 ) {
     val dismissState = rememberSwipeToDismissBoxState(
         confirmValueChange = {
@@ -129,24 +192,40 @@ fun VisitorCard(
             Column(
                 modifier = Modifier.padding(16.dp)
             ) {
-                Text(text = visitor.name.ifBlank { "Новый теннисист - нажми и редактируй" })
-                Column(
-                    modifier = Modifier.padding(top = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    visitor.cars.forEach { car ->
-                        var isChecked by remember { mutableStateOf(false) }
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Checkbox(
-                                checked = isChecked,
-                                onCheckedChange = { isChecked = it }
-                            )
-                            Text(
-                                text = car.make,
-                                modifier = Modifier.padding(start = 8.dp)
-                            )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (visitor.name.isNotBlank()) {
+                        Checkbox(
+                            checked = visitor.isSelected,
+                            onCheckedChange = { onVisitorSelected(visitor) }
+                        )
+                    }
+                    Text(text = visitor.name.ifBlank { "Нажми и редактируй ФИО" })
+                }
+                if (visitor.cars.isNotEmpty()) {
+                    Column(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(20))
+                            .background(Color.White)
+                            .padding(16.dp)
+                    ) {
+                        if (visitor.cars.isNotEmpty()) {
+                            Text("Автомобили")
+                        }
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            visitor.cars.forEach { car ->
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Checkbox(
+                                        checked = car.isSelected,
+                                        onCheckedChange = { onCarSelected(car, visitor) }
+                                    )
+                                    Text(
+                                        text = car.make,
+                                        modifier = Modifier.padding(start = 8.dp)
+                                    )
+                                }
+                            }
                         }
                     }
                 }

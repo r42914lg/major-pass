@@ -6,6 +6,11 @@ import java.util.UUID
 @Serializable
 data class Visitor(
     val id: String = UUID.randomUUID().toString(),
-    var name: String = "",
-    var cars: List<Car> = emptyList(),
+    val name: String = "",
+    val cars: List<Car> = emptyList(),
+    val isSelected: Boolean = false,
 )
+
+fun List<Visitor>.toClipboardText(): String {
+    return ""
+}

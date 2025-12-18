@@ -3,7 +3,6 @@ package com.r42914lg.major
 import android.app.Application
 import androidx.compose.runtime.Stable
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.r42914lg.major.data.ListFileStorage
 import com.r42914lg.major.model.Car
@@ -13,11 +12,14 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.internal.encodeByWriter
 
 sealed interface ScreenEvent {
     data object AddVisitor : ScreenEvent
     data class EditVisitor(val visitor: Visitor) : ScreenEvent
     data class RemoveVisitor(val visitor: Visitor) : ScreenEvent
+    data class SelectVisitor(val visitor: Visitor) : ScreenEvent
+    data class SelectCar(val car: Car, val visitor: Visitor) : ScreenEvent
 }
 
 @Stable
@@ -41,20 +43,24 @@ class MainViewModel(application: Application) : AndroidViewModel(application), M
     override fun onScreenEvent(event: ScreenEvent) {
         when (event) {
             is ScreenEvent.EditVisitor -> {
-                val current = _screenState.value.firstOrNull { it.id == event.visitor.id }
-                current?.let { visitor ->
-                    visitor.name = event.visitor.name
-                    visitor.cars = event.visitor.cars.filter { it.make.isNotBlank() }
-                    _screenState.update { _screenState.value.toList() }
-                    viewModelScope.launch {
-                        dataStore.write(_screenState.value)
+                val mutableList = _screenState.value.toMutableList()
+                mutableList.forEachIndexed { i, visitor ->
+                    if (visitor.id == event.visitor.id) {
+                        mutableList[i] = visitor.copy(
+                            name = event.visitor.name,
+                            cars = event.visitor.cars.filter { it.make.isNotBlank() }
+                        )
                     }
+                }
+                _screenState.update { mutableList.toList() }
+                viewModelScope.launch {
+                    dataStore.write(_screenState.value)
                 }
             }
             is ScreenEvent.RemoveVisitor -> {
-                val list = _screenState.value.toMutableList()
-                list.remove(event.visitor)
-                _screenState.update { list }
+                val mutableList = _screenState.value.toMutableList()
+                mutableList.remove(event.visitor)
+                _screenState.update { mutableList }
                 viewModelScope.launch {
                     dataStore.write(_screenState.value)
                 }
@@ -62,6 +68,47 @@ class MainViewModel(application: Application) : AndroidViewModel(application), M
             is ScreenEvent.AddVisitor -> {
                 val list = _screenState.value
                 _screenState.update { list + Visitor() }
+            }
+
+            is ScreenEvent.SelectCar -> {
+                val mutableList = _screenState.value.toMutableList()
+                mutableList.forEachIndexed { i, visitor ->
+                    if (visitor.id == event.visitor.id) {
+                        val mutableCars = visitor.cars.toMutableList()
+                        mutableCars.forEachIndexed { j, car ->
+                            if (car.licencePlate == event.car.licencePlate) {
+                                mutableCars[j] = car.copy(isSelected = !car.isSelected)
+                            }
+                        }
+                        mutableList[i] = visitor.copy(cars = mutableCars)
+                    }
+                }
+                _screenState.update { mutableList.toList() }
+                viewModelScope.launch {
+                    dataStore.write(_screenState.value)
+                }
+            }
+            is ScreenEvent.SelectVisitor -> {
+                val mutableList = _screenState.value.toMutableList()
+                mutableList.forEachIndexed { i, visitor ->
+                    if (visitor.id == event.visitor.id) {
+                        val isSelectedTargetValue = !event.visitor.isSelected
+                        val mutableCars = visitor.cars.toMutableList()
+                        if (!isSelectedTargetValue) {
+                            mutableCars.forEachIndexed { j, car ->
+                                mutableCars[j] = car.copy(isSelected = false)
+                            }
+                        }
+                        mutableList[i] = visitor.copy(
+                            isSelected = isSelectedTargetValue,
+                            cars = mutableCars
+                        )
+                    }
+                }
+                _screenState.update { mutableList.toList() }
+                viewModelScope.launch {
+                    dataStore.write(_screenState.value)
+                }
             }
         }
     }
