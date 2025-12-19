@@ -1,3 +1,18 @@
 <resources>
     <string name="app_name">Major</string>
+    <string name="copy_to_clipboard">Скопировать текстом в буфер</string>
+    <string name="add_visitor_description">Добавить посетителя</string>
+    <string name="clip_label">Данные для пропуска</string>
+    <string name="add_tennis_player">Добавь тенниста ниже!</string>
+    <string name="delete_descritpion">Удалить</string>
+    <string name="edit_fio">Нажми и редактируй ФИО</string>
+    <string name="cars_title">Автомобили</string>
+    <string name="enter_fio_title">Введи ФИО</string>
+    <string name="back_description">Назад</string>
+    <string name="fio_label">ФИО посетителя</string>
+    <string name="cars_section_title">Машины</string>
+    <string name="make_title">Марка</string>
+    <string name="plate_title">Гос. номер</string>
+    <string name="add_car_title">Добавить машину</string>
+    <string name="save_button_title">Сохранить</string>
 </resources>

@@ -53,17 +53,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application), M
                     }
                 }
                 _screenState.update { mutableList.toList() }
-                viewModelScope.launch {
-                    dataStore.write(_screenState.value)
-                }
+                updateStore()
             }
             is ScreenEvent.RemoveVisitor -> {
                 val mutableList = _screenState.value.toMutableList()
                 mutableList.remove(event.visitor)
                 _screenState.update { mutableList }
-                viewModelScope.launch {
-                    dataStore.write(_screenState.value)
-                }
+                updateStore()
             }
             is ScreenEvent.AddVisitor -> {
                 val list = _screenState.value
@@ -88,9 +84,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application), M
                     }
                 }
                 _screenState.update { mutableList.toList() }
-                viewModelScope.launch {
-                    dataStore.write(_screenState.value)
-                }
+                updateStore()
             }
             is ScreenEvent.SelectVisitor -> {
                 val isSelectedTargetValue = !event.visitor.isSelected
@@ -110,10 +104,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application), M
                     }
                 }
                 _screenState.update { mutableList.toList() }
-                viewModelScope.launch {
-                    dataStore.write(_screenState.value)
-                }
+                updateStore()
             }
+        }
+    }
+    private fun updateStore() {
+        viewModelScope.launch {
+            dataStore.write(_screenState.value)
         }
     }
 }

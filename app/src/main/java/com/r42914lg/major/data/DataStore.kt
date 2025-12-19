@@ -16,7 +16,7 @@ class ListFileStorage(
     }
 ) {
     private val file: File
-        get() = File(context.filesDir, "visitors.json")
+        get() = File(context.filesDir, FILE_NAME)
 
     suspend fun write(items: List<Visitor>) = withContext(Dispatchers.IO) {
         val jsonString = json.encodeToString(items)
@@ -32,5 +32,9 @@ class ListFileStorage(
         }.getOrElse {
             emptyList()
         }
+    }
+
+    companion object {
+        private const val FILE_NAME = "visitors.json"
     }
 }

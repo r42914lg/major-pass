@@ -43,10 +43,12 @@ import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.LocalClipboard
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.r42914lg.major.MainStateHolder
+import com.r42914lg.major.R
 import com.r42914lg.major.ScreenEvent
 import com.r42914lg.major.model.Car
 import com.r42914lg.major.model.Visitor
@@ -63,9 +65,13 @@ fun Visitors(
     val scope = rememberCoroutineScope()
 
     val state by mainStateHolder.screenState.collectAsStateWithLifecycle()
-    val canShare by derivedStateOf {
-        state.count { it.isSelected } > 0
+    val canShare by remember {
+        derivedStateOf {
+            state.count { it.isSelected } > 0
+        }
     }
+
+    val clipLabel = stringResource(R.string.clip_label)
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -81,7 +87,7 @@ fun Visitors(
                         clipboardManager.setClipEntry(
                             ClipEntry(
                                 ClipData.newPlainText(
-                                    "Данные для пропуска",
+                                    clipLabel,
                                     state.toClipboardText()
                                 )
                             )
@@ -89,19 +95,21 @@ fun Visitors(
                     }
                 }
             ) {
-                Text("Скопировать текстом в буфер")
+                Text(stringResource(R.string.copy_to_clipboard))
             }
         },
         floatingActionButton = {
             FloatingActionButton(onClick = {
                 mainStateHolder.onScreenEvent(ScreenEvent.AddVisitor)
             }) {
-                Icon(Icons.Filled.Add, contentDescription = "Add Visitor")
+                Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.add_visitor_description))
             }
         }
     ) { paddingValues ->
         if (state.isNotEmpty()) {
-            LazyColumn(Modifier.padding(paddingValues).padding(start = 16.dp, end = 16.dp, bottom = 100.dp)) {
+            LazyColumn(Modifier
+                .padding(paddingValues)
+                .padding(start = 16.dp, end = 16.dp, bottom = 100.dp)) {
                 items(state.size, key = { state[it].id }) { index ->
                     VisitorCard(
                         modifier = Modifier.clickable {
@@ -125,7 +133,7 @@ fun Visitors(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                Text("Добавь тенниста ниже!")
+                Text(stringResource(R.string.add_tennis_player))
             }
         }
     }
@@ -180,7 +188,7 @@ fun VisitorCard(
             ) {
                 Icon(
                     icon,
-                    contentDescription = "Delete",
+                    contentDescription = stringResource(R.string.delete_descritpion),
                     modifier = Modifier.scale(scale)
                 )
             }
@@ -199,7 +207,7 @@ fun VisitorCard(
                             onCheckedChange = { onVisitorSelected(visitor) }
                         )
                     }
-                    Text(text = visitor.name.ifBlank { "Нажми и редактируй ФИО" })
+                    Text(text = visitor.name.ifBlank { stringResource(R.string.edit_fio) })
                 }
                 if (visitor.cars.isNotEmpty()) {
                     Column(
@@ -209,7 +217,7 @@ fun VisitorCard(
                             .padding(16.dp)
                     ) {
                         if (visitor.cars.isNotEmpty()) {
-                            Text("Автомобили")
+                            Text(stringResource(R.string.cars_title))
                         }
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             visitor.cars.forEach { car ->

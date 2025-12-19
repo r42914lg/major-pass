@@ -33,8 +33,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.r42914lg.major.R
 import com.r42914lg.major.model.Car
 import com.r42914lg.major.model.Visitor
 
@@ -54,10 +56,12 @@ fun Details(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Введи ФИО") },
+                title = { Text(stringResource(R.string.enter_fio_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(
+                            R.string.back_description
+                        ))
                     }
                 }
             )
@@ -78,13 +82,13 @@ fun Details(
                 value = name,
                 singleLine = true,
                 onValueChange = { name = it },
-                label = { Text("ФИО посетителя") },
+                label = { Text(stringResource(R.string.fio_label)) },
                 modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text("Машины", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.cars_section_title), style = MaterialTheme.typography.titleMedium)
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -102,7 +106,7 @@ fun Details(
                             onValueChange = { updatedMake ->
                                 cars[index] = car.copy(make = updatedMake)
                             },
-                            label = { Text("Марка") },
+                            label = { Text(stringResource(R.string.make_title)) },
                             modifier = Modifier.weight(1f)
                         )
                         OutlinedTextField(
@@ -110,11 +114,12 @@ fun Details(
                             onValueChange = { updatedPlate ->
                                 cars[index] = car.copy(licencePlate = updatedPlate)
                             },
-                            label = { Text("Гос. номер") },
+                            label = { Text(stringResource(R.string.plate_title)) },
                             modifier = Modifier.weight(1f)
                         )
                         IconButton(onClick = { cars.removeAt(index) }) {
-                            Icon(Icons.Default.Delete, contentDescription = "Удалить")
+                            Icon(Icons.Default.Delete,
+                                contentDescription = stringResource(R.string.delete_descritpion))
                         }
                     }
                 }
@@ -124,7 +129,7 @@ fun Details(
                 onClick = { cars.add(Car("", "")) },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Добавить машину")
+                Text(stringResource(R.string.add_car_title))
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -141,7 +146,7 @@ fun Details(
                 modifier = Modifier.fillMaxWidth(),
                 enabled = name.isNotBlank()
             ) {
-                Text("Сохранить")
+                Text(stringResource(R.string.save_button_title))
             }
         }
     }
