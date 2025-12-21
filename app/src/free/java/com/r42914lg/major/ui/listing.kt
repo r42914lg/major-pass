@@ -41,8 +41,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.LocalClipboard
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -58,6 +60,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun Visitors(
     mainStateHolder: MainStateHolder,
+    intentParam: String?,
     modifier: Modifier = Modifier,
     onVisitorClick: (Visitor) -> Unit = {},
 ) {
@@ -74,8 +77,13 @@ fun Visitors(
     val clipLabel = stringResource(R.string.clip_label)
 
     Scaffold(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .testTag("listing_root")
+            .fillMaxSize(),
         topBar = {
+            intentParam?.let {
+                Text(it, Modifier.background(Color.Red))
+            }
             Button(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -95,7 +103,7 @@ fun Visitors(
                     }
                 }
             ) {
-                Text(stringResource(R.string.copy_to_clipboard))
+                Text(text = stringResource(R.string.copy_to_clipboard))
             }
         },
         floatingActionButton = {
@@ -130,7 +138,9 @@ fun Visitors(
             }
         } else {
             Box(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .testTag("copy_view")
+                    .fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
                 Text(stringResource(R.string.add_tennis_player))

@@ -1,5 +1,6 @@
 package com.r42914lg.major
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -34,9 +35,14 @@ class MainActivity : ComponentActivity() {
             )
             val navigator = remember { Navigator(navigationState) }
             val entryProvider = entryProvider {
-                entry<RouteListing>{ Visitors(mainStateHolder) {
-                    navigator.navigate(RouteDetails(it))
-                } }
+                entry<RouteListing>{
+                    Visitors(
+                        mainStateHolder = mainStateHolder,
+                        intentParam = intent.getStringExtra(INTENT_PARAM_KEY)
+                    ) {
+                        navigator.navigate(RouteDetails(it))
+                    }
+                }
                 entry<RouteDetails>{ key -> Details(
                         data = key.data,
                         onEditComplete = {
@@ -57,5 +63,9 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
+    }
+
+    companion object {
+        const val INTENT_PARAM_KEY = "intent_param_key"
     }
 }
